@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client"
 import { BookingForm } from "@/components/booking-form"
 import { HostDetails } from "@/components/host-details"
 import { MeetingTypeInfo } from "@/components/meeting-type-info"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+
 import type { Metadata } from "next"
 
 const prisma = new PrismaClient()
@@ -130,7 +130,7 @@ export default async function PublicBookingPage({ params }: Props) {
                 <HostDetails
                   name={userData.name || username}
                   avatarUrl={userData.image || "/placeholder-user.jpg"}
-                  bio={userData.bio}
+                  bio={userData.bio || undefined}
                   className="mb-6"
                 />
 

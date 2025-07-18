@@ -109,7 +109,6 @@ export function BookingForm({
           guestEmail,
           bookingDate: selectedDate.toISOString().split("T")[0],
           startTime: selectedTime,
-          endTime: getEndTime(selectedTime),
           duration: selectedDuration,
           notes,
         }),

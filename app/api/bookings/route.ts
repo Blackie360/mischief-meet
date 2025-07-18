@@ -8,17 +8,11 @@ const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 })
-    }
-
     const body = await request.json()
-    const { hostId, selectedDate, selectedTime, duration, guestName, guestEmail, notes } = body
+    const { hostId, bookingDate, startTime, duration, guestName, guestEmail, notes } = body
 
     // Validate required fields
-    if (!hostId || !selectedDate || !selectedTime || !duration || !guestName || !guestEmail) {
+    if (!hostId || !bookingDate || !startTime || !duration || !guestName || !guestEmail) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
@@ -49,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate end time based on duration
-    const startDateTime = new Date(`1970-01-01T${selectedTime}`)
+    const startDateTime = new Date(`1970-01-01T${startTime}`)
     const endDateTime = new Date(startDateTime.getTime() + duration * 60000)
 
     // Create booking
@@ -58,7 +52,7 @@ export async function POST(request: NextRequest) {
         hostId: host.id,
         guestName,
         guestEmail,
-        bookingDate: new Date(selectedDate),
+        bookingDate: new Date(bookingDate),
         startTime: startDateTime,
         endTime: endDateTime,
         notes: notes || "",
@@ -69,14 +63,14 @@ export async function POST(request: NextRequest) {
     const bookingId = booking.id
 
     // Format date and time for emails
-    const eventDate = new Date(selectedDate).toLocaleDateString("en-US", {
+    const eventDate = new Date(bookingDate).toLocaleDateString("en-US", {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
     })
 
-    const eventTime = new Date(`${selectedDate}T${selectedTime}`).toLocaleTimeString("en-US", {
+    const eventTime = new Date(`${bookingDate}T${startTime}`).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
