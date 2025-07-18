@@ -125,15 +125,15 @@ export default async function PublicBookingPage({ params }: Props) {
                     </h3>
                   </div>
                 </div>
-                
+
                 {/* Host Details */}
-                <HostDetails 
+                <HostDetails
                   name={userData.name || username}
                   avatarUrl={userData.image || "/placeholder-user.jpg"}
                   bio={userData.bio}
                   className="mb-6"
                 />
-                
+
                 {/* Meeting Type Info */}
                 <MeetingTypeInfo
                   title={meetingTitle}
@@ -141,14 +141,14 @@ export default async function PublicBookingPage({ params }: Props) {
                   description={meetingDescription}
                   className="mt-6"
                 />
-                
+
                 {/* Spacer for mobile layout */}
                 <div className="hidden lg:block mt-auto pt-8 border-t border-gray-100">
                   <p className="text-xs text-gray-500">Powered by MeetMischief</p>
                 </div>
               </div>
             </div>
-            
+
             {/* Right Column - Booking Form */}
             <div className="lg:col-span-8">
               <div className="p-8 lg:p-10">
@@ -158,7 +158,7 @@ export default async function PublicBookingPage({ params }: Props) {
                   </svg>
                   Select Date & Time
                 </h2>
-                
+
                 <BookingForm
                   hostId={userData.id}
                   hostName={userData.name || userData.email || 'Host'}
