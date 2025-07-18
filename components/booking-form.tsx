@@ -141,7 +141,7 @@ export function BookingForm({
   }
   
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!email) {
       setEmailError("Email is required")
       return false
