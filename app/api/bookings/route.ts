@@ -39,25 +39,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Host not found' }, { status: 404 });
     }
 
-    // Calculate end time
-    const [startHour, startMinute] = startTime.split(':').map(Number);
-    const startDate = new Date(bookingDate);
-    startDate.setHours(startHour, startMinute, 0, 0);
+    // Convert string time to proper DateTime objects for Prisma
+    const [startHours, startMinutes] = startTime.split(':').map(Number);
+    const startDateTime = new Date(bookingDate);
+    startDateTime.setHours(startHours, startMinutes, 0, 0);
     
-    const endDate = new Date(startDate);
-    endDate.setMinutes(endDate.getMinutes() + duration);
+    const endDateTime = new Date(startDateTime);
+    endDateTime.setMinutes(endDateTime.getMinutes() + duration);
     
-    const endTime = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
-
-    // Create booking record
+    // Format end time for display/emails
+    const endTime = `${endDateTime.getHours().toString().padStart(2, '0')}:${endDateTime.getMinutes().toString().padStart(2, '0')}`;
+    
     const booking = await prisma.booking.create({
       data: {
         hostId,
         guestName,
         guestEmail,
         bookingDate: new Date(bookingDate),
-        startTime: startTime,
-        endTime: endTime,
+        startTime: startDateTime,
+        endTime: endDateTime,
         notes,
         status: 'confirmed'
       }
@@ -84,8 +84,8 @@ export async function POST(request: Request) {
             {
               summary: `Meeting with ${guestName}`,
               description: notes ? `Notes: ${notes}` : 'Scheduled via MeetMischief',
-              startDateTime: startDate,
-              endDateTime: endDate,
+              startDateTime: startDateTime,
+              endDateTime: endDateTime,
               attendees: [
                 { email: guestEmail, name: guestName },
                 { email: host.email || '' }
@@ -134,8 +134,8 @@ export async function POST(request: Request) {
           return await createGoogleMeetEvent({
             summary: `Meeting with ${guestName}`,
             description: notes ? `Notes: ${notes}` : 'Scheduled via MeetMischief',
-            startDateTime: startDate,
-            endDateTime: endDate,
+            startDateTime: startDateTime,
+            endDateTime: endDateTime,
             attendees: [
               { email: guestEmail, name: guestName },
               { email: host.email || '' }
