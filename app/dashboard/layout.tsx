@@ -2,12 +2,12 @@
 
 import type React from "react"
 
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Calendar, Settings, User, BarChart3 } from "lucide-react"
+import { Calendar, Settings, User, BarChart3, LogOut } from "lucide-react"
 
 export default function DashboardLayout({
   children,
@@ -79,6 +79,15 @@ export default function DashboardLayout({
                   <User className="w-4 h-4 mr-2" />
                   View Public Page
                 </Link>
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="text-gray-600 hover:text-red-600 transition-colors"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign Out
               </Button>
             </div>
           </div>
