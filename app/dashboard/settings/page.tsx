@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
-import { User, Globe, Clock, Save } from "lucide-react"
+import { User, Globe, Clock, Save, RefreshCw } from "lucide-react"
 
 const TIMEZONES = [
   { value: "UTC", label: "UTC" },
@@ -29,6 +29,7 @@ export default function SettingsPage() {
   const { data: session, update } = useSession()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [isDetectingTimezone, setIsDetectingTimezone] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -53,6 +54,55 @@ export default function SettingsPage() {
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+  
+  const detectUserTimezone = () => {
+    setIsDetectingTimezone(true)
+    try {
+      // Get the user's timezone using Intl API
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      
+      // Check if the detected timezone is in our list
+      const isSupported = TIMEZONES.some(tz => tz.value === userTimezone)
+      
+      if (userTimezone && isSupported) {
+        // Update the form data with the detected timezone
+        setFormData(prev => ({ ...prev, timezone: userTimezone }))
+        toast({
+          title: "Timezone Detected",
+          description: `Your timezone has been set to ${userTimezone}.`,
+        })
+      } else {
+        // If timezone is not in our list, find the closest match or use UTC
+        const fallbackTimezone = getFallbackTimezone(userTimezone)
+        setFormData(prev => ({ ...prev, timezone: fallbackTimezone }))
+        toast({
+          title: "Timezone Detected",
+          description: `Your timezone was detected as ${userTimezone}, using ${fallbackTimezone} from our supported list.`,
+        })
+      }
+    } catch (error) {
+      console.error("Error detecting timezone:", error)
+      toast({
+        title: "Error",
+        description: "Failed to detect your timezone. Please select it manually.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsDetectingTimezone(false)
+    }
+  }
+  
+  // Helper function to find the closest matching timezone from our list
+  const getFallbackTimezone = (detectedTimezone: string) => {
+    // Try to match by region
+    const region = detectedTimezone.split('/')[0]
+    const regionMatch = TIMEZONES.find(tz => tz.value.startsWith(region))
+    
+    if (regionMatch) return regionMatch.value
+    
+    // Default to UTC if no match
+    return "UTC"
   }
 
   const handleSave = async () => {
@@ -220,8 +270,20 @@ export default function SettingsPage() {
           <CardDescription>Set your timezone for accurate scheduling.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="timezone">Timezone</Label>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="timezone" className="text-sm font-medium">Timezone</Label>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={detectUserTimezone}
+                disabled={isDetectingTimezone}
+                className="flex items-center gap-1 text-xs"
+              >
+                <RefreshCw className={`w-3 h-3 ${isDetectingTimezone ? 'animate-spin' : ''}`} />
+                {isDetectingTimezone ? 'Detecting...' : 'Auto-detect'}
+              </Button>
+            </div>
             <Select value={formData.timezone} onValueChange={(value) => handleInputChange("timezone", value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Select your timezone" />
@@ -234,6 +296,9 @@ export default function SettingsPage() {
                 ))}
               </SelectContent>
             </Select>
+            <p className="text-xs text-gray-500">
+              Your timezone is used to display meeting times correctly for you and your guests.
+            </p>
           </div>
         </CardContent>
       </Card>
