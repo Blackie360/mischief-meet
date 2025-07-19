@@ -52,6 +52,7 @@ export function BookingForm({
   const [isLoading, setIsLoading] = useState(false)
   const [isBooked, setIsBooked] = useState(false)
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
+  const [bookingData, setBookingData] = useState<any>(null)
   const { toast } = useToast()
 
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -115,12 +116,24 @@ export function BookingForm({
       })
 
       if (response.ok) {
-        setIsBooked(true)
-        setIsDetailsDialogOpen(false)
-        toast({
-          title: "Booking confirmed!",
-          description: "You'll receive a confirmation email shortly.",
-        })
+        const data = await response.json();
+        setIsBooked(true);
+        setIsDetailsDialogOpen(false);
+        // Store the booking data including the meet link if available
+        setBookingData(data);
+        
+        // Show different toast message based on whether a meet link was created
+        if (data.meetLink) {
+          toast({
+            title: "Booking confirmed!",
+            description: "A Google Meet link has been created and sent to your email.",
+          })
+        } else {
+          toast({
+            title: "Booking confirmed!",
+            description: "You'll receive a confirmation email shortly.",
+          })
+        }
       } else {
         const error = await response.json()
         toast({
@@ -274,11 +287,44 @@ export function BookingForm({
                 </svg>
                 <div>
                   <p className="text-sm text-gray-500">Meeting Link</p>
-                  <p className="font-medium text-blue-600">Will be sent to your email</p>
+                  {bookingData?.meetLink ? (
+                    <a 
+                      href={bookingData.meetLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center"
+                    >
+                      Join Google Meet
+                      <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  ) : (
+                    <p className="font-medium text-blue-600">Will be sent to your email</p>
+                  )}
                 </div>
               </div>
             </div>
           </div>
+          
+          {bookingData?.meetLink && (
+            <div className="mb-6">
+              <a 
+                href={bookingData.meetLink} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg text-center transition-colors flex items-center justify-center"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Join Google Meet
+              </a>
+              <p className="text-xs text-center text-gray-500 mt-2">
+                This link has also been sent to your email
+              </p>
+            </div>
+          )}
           
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button 

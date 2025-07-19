@@ -1,15 +1,29 @@
 import type { NextAuthOptions } from "next-auth"
 import type { User, Account, Profile } from "next-auth"
 import EmailProvider from "next-auth/providers/email"
+import GoogleProvider from "next-auth/providers/google"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { PrismaClient } from "@prisma/client"
 import type { JWT } from "next-auth/jwt"
+import { TokenError } from "./token-service"
 
 const prisma = new PrismaClient()
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: 'openid email profile',
+          access_type: 'offline',
+          prompt: 'consent',
+          response_type: 'code'
+        }
+      }
+    }),
     EmailProvider({
       server: {
         host: process.env.EMAIL_SERVER_HOST,
@@ -79,6 +93,87 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async jwt({ token, account, profile }) {
+      // Persist the OAuth access_token and refresh_token to the token right after sign in
+      if (account) {
+        token.accessToken = account.access_token
+        token.refreshToken = account.refresh_token
+        token.accessTokenExpires = account.expires_at ? account.expires_at * 1000 : undefined // Convert to milliseconds
+        token.provider = account.provider
+        token.providerAccountId = account.providerAccountId
+        
+        // Add error handling for missing tokens
+        if (account.provider === 'google' && !account.access_token) {
+          console.error("Missing access token for Google OAuth")
+          token.error = "missing_access_token"
+        }
+        
+        // Store the scopes that were granted
+        if (account.scope) {
+          token.scope = account.scope
+          
+          // Check if calendar scope was granted
+          const hasCalendarScope = account.scope.includes('https://www.googleapis.com/auth/calendar')
+          token.hasCalendarScope = hasCalendarScope
+          
+          if (!hasCalendarScope && account.provider === 'google') {
+            console.warn("Google Calendar scope was not granted")
+            token.error = "missing_calendar_scope"
+          }
+        }
+      }
+      
+      // If the token has expired and we have a refresh token, try to refresh it
+      if (token.accessTokenExpires && Date.now() > token.accessTokenExpires && token.refreshToken) {
+        try {
+          // Import dynamically to avoid circular dependencies
+          const { refreshAccessToken } = await import('./token-service')
+          
+          console.log("Access token has expired, refreshing...")
+          const refreshedTokens = await refreshAccessToken(token.refreshToken as string)
+          
+          if (refreshedTokens) {
+            token.accessToken = refreshedTokens.accessToken
+            token.accessTokenExpires = refreshedTokens.expiresAt
+            
+            // Clear any previous errors
+            if (token.error === "token_expired") {
+              delete token.error
+            }
+            
+            // If we have the user ID and provider account ID, update the database
+            if (token.sub && token.providerAccountId) {
+              const { updateUserTokens } = await import('./token-service')
+              await updateUserTokens(
+                token.sub,
+                token.providerAccountId as string,
+                refreshedTokens.accessToken,
+                refreshedTokens.expiresAt
+              )
+            }
+          }
+        } catch (error) {
+          console.error("Error refreshing access token", error)
+          
+          // Set specific error based on the type
+          if (error instanceof TokenError) {
+            if (error.code === 'INVALID_GRANT') {
+              token.error = "invalid_grant"
+            } else {
+              token.error = "token_refresh_error"
+            }
+          } else {
+            token.error = "token_expired"
+          }
+          
+          // Keep the expired token for now, but mark it as expired
+          token.tokenExpired = true
+        }
+      }
+      
+      return token
+    },
+    
     async signIn({ user, account, profile }: { user: User; account: Account | null; profile?: Profile }) {
       if (!user.email) {
         console.error("No email provided for sign in")
@@ -119,6 +214,33 @@ export const authOptions: NextAuthOptions = {
             }
           })
           console.log("New user created:", user.email)
+        } else if (account && account.provider === 'google') {
+          // Check if this Google account is already linked to the user
+          const existingAccount = await prisma.account.findFirst({
+            where: {
+              userId: existingUser.id,
+              provider: 'google',
+            }
+          });
+          
+          // If no Google account is linked yet, link this one
+          if (!existingAccount) {
+            await prisma.account.create({
+              data: {
+                userId: existingUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                refresh_token: account.refresh_token,
+                access_token: account.access_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+              }
+            });
+            console.log("Linked Google account to existing user:", user.email);
+          }
         }
         return true
       } catch (error) {
@@ -126,12 +248,13 @@ export const authOptions: NextAuthOptions = {
         return false
       }
     },
-    async session({ session, token }: { session: any; token: JWT }) {
+    async session({ session, token, user }: { session: any; token: JWT; user: any }) {
       if (!session.user?.email) {
         return session
       }
 
       try {
+        // Get user data from database
         const dbUser = await prisma.user.findUnique({
           where: { email: session.user.email },
           select: {
@@ -139,7 +262,9 @@ export const authOptions: NextAuthOptions = {
             username: true,
             name: true,
             bio: true,
-            timezone: true
+            timezone: true,
+            googleCalendarId: true,
+            googleCalendarEnabled: true
           }
         })
 
@@ -149,6 +274,50 @@ export const authOptions: NextAuthOptions = {
           session.user.name = dbUser.name
           session.user.bio = dbUser.bio
           session.user.timezone = dbUser.timezone
+          session.user.googleCalendarId = dbUser.googleCalendarId
+          session.user.googleCalendarEnabled = dbUser.googleCalendarEnabled
+        }
+
+        // If this is a Google OAuth session, include the access token
+        if (token.provider === 'google') {
+          session.accessToken = token.accessToken
+          session.refreshToken = token.refreshToken
+          session.accessTokenExpires = token.accessTokenExpires
+          
+          // Include OAuth error information in the session
+          if (token.error) {
+            session.error = token.error
+            session.tokenExpired = token.tokenExpired
+            
+            // If there's an OAuth error and the user has Google Calendar enabled,
+            // we should update their status to reflect the connection issue
+            if (dbUser?.googleCalendarEnabled && 
+                (token.error === 'token_expired' || 
+                 token.error === 'invalid_grant' || 
+                 token.error === 'token_refresh_error')) {
+              try {
+                // Mark Google Calendar as having connection issues
+                await prisma.user.update({
+                  where: { id: dbUser.id },
+                  data: {
+                    googleCalendarEnabled: false
+                  }
+                })
+                
+                // Update the session to reflect this change
+                session.user.googleCalendarEnabled = false
+                
+                console.log(`Disabled Google Calendar for user ${dbUser.id} due to OAuth error: ${token.error}`)
+              } catch (updateError) {
+                console.error("Error updating user Google Calendar status:", updateError)
+              }
+            }
+          }
+          
+          // Include scope information
+          if (token.hasCalendarScope !== undefined) {
+            session.hasCalendarScope = token.hasCalendarScope
+          }
         }
       } catch (error) {
         console.error("Error fetching user session data:", error)
