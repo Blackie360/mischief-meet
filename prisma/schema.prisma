@@ -20,10 +20,11 @@ model User {
   allowedDurations     Int[]     @default([15, 30, 60])
   googleCalendarId     String?
   googleCalendarEnabled Boolean   @default(false)
+  availability         Json?     // JSON field for storing weekly availability schedule
   createdAt            DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt            DateTime  @default(now()) @db.Timestamptz(6)
 
-  availability  Availability[]
+  availabilitySlots  Availability[]
   blockedDates  BlockedDate[]
   bookings      Booking[]      @relation("HostBookings")
   

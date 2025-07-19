@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -255,6 +256,18 @@ export default function SettingsPage() {
             </div>
             <p className="text-xs text-gray-500">
               Select which duration options guests can choose from
+            </p>
+          </div>
+          
+          <div className="pt-4 border-t mt-4">
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/dashboard/availability">
+                <Clock className="mr-2 h-4 w-4" />
+                Set Your Weekly Availability
+              </Link>
+            </Button>
+            <p className="text-xs text-gray-500 mt-2">
+              Define your weekly schedule and when you're available for meetings
             </p>
           </div>
         </CardContent>
