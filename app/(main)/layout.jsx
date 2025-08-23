@@ -19,53 +19,75 @@ export default function AppLayout({ children }) {
 
   return (
     <>
-      {!isLoaded && <BarLoader width={"100%"} color="#36d7b7" />}
-      <div className="flex flex-col h-screen bg-blue-50 md:flex-row">
+      {!isLoaded && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
+          <BarLoader width={"100%"} color="#8b5cf6" />
+        </div>
+      )}
+      <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 md:flex-row">
         {/* Sidebar for medium screens and up */}
-        <aside className="hidden md:block w-64 bg-white">
-          <nav className="mt-8">
-            <ul>
-              {navItems.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className={`flex items-center px-4 py-4 text-gray-700  hover:bg-gray-100 ${
-                      pathname === item.href ? "bg-blue-100" : ""
-                    }`}
-                  >
-                    <item.icon className="w-5 h-5 mr-3" />
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+        <aside className="hidden md:block w-72 bg-white/80 backdrop-blur-sm border-r border-slate-200/60 shadow-xl">
+          <div className="p-6">
+            <div className="mb-8">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                Mischief Meet
+              </h1>
+              <p className="text-sm text-slate-500 mt-1">Your scheduling hub</p>
+            </div>
+            <nav>
+              <ul className="space-y-2">
+                {navItems.map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center px-4 py-3 text-slate-700 rounded-xl transition-all duration-200 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 hover:shadow-md ${
+                        pathname === item.href 
+                          ? "bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 shadow-md border border-purple-200/50" 
+                          : "hover:text-purple-700"
+                      }`}
+                    >
+                      <item.icon className={`w-5 h-5 mr-3 transition-colors duration-200 ${
+                        pathname === item.href ? "text-purple-600" : "text-slate-500"
+                      }`} />
+                      <span className="font-medium">{item.label}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </div>
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
-          <header className="flex justify-between items-center mb-4">
-            <h2 className="text-5xl md:text-6xl gradient-title pt-2 md:pt-0 text-center md:text-left w-full">
-              {navItems.find((item) => item.href === pathname)?.label ||
-                "Dashboard"}
+        <main className="flex-1 overflow-y-auto p-6 md:p-8">
+          <header className="mb-8">
+            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-slate-800 via-purple-700 to-blue-700 bg-clip-text text-transparent">
+              {navItems.find((item) => item.href === pathname)?.label || "Dashboard"}
             </h2>
+            <div className="h-1 w-24 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mt-3"></div>
           </header>
-          {children}
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
         </main>
 
         {/* Bottom tabs for small screens */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-md">
-          <ul className="flex justify-around">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md shadow-2xl border-t border-slate-200/60">
+          <ul className="flex justify-around py-3">
             {navItems.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`flex flex-col items-center py-2 px-4 ${
-                    pathname === item.href ? "text-blue-600" : "text-gray-600"
+                  className={`flex flex-col items-center py-2 px-4 rounded-xl transition-all duration-200 ${
+                    pathname === item.href 
+                      ? "text-purple-600 bg-purple-50 shadow-md" 
+                      : "text-slate-600 hover:text-purple-600 hover:bg-slate-50"
                   }`}
                 >
-                  <item.icon className="w-6 h-6" />
-                  <span className="text-xs mt-1">{item.label}</span>
+                  <item.icon className={`w-6 h-6 mb-1 transition-colors duration-200 ${
+                    pathname === item.href ? "text-purple-600" : "text-slate-500"
+                  }`} />
+                  <span className="text-xs font-medium">{item.label}</span>
                 </Link>
               </li>
             ))}

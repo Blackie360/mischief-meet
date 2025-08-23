@@ -7,8 +7,8 @@ import CreateEventDrawer from "@/components/create-event";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Schedulrr",
-  description: " ",
+  title: "Mischief Meet",
+  description: "Where connections happen",
 };
 
 export default function RootLayout({ children }) {

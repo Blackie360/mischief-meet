@@ -2,30 +2,62 @@ import { Suspense } from "react";
 import { getUserMeetings } from "@/actions/meetings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MeetingList from "./_components/meeting-list";
+import { Calendar, Clock, Users } from "lucide-react";
 
 export const metadata = {
-  title: "Your Meetings | Schedulrr",
+  title: "Your Meetings | Mischief Meet",
   description: "View and manage your upcoming and past meetings.",
 };
 
 export default async function MeetingsPage() {
   return (
-    <Tabs defaultValue="upcoming">
-      <TabsList className="mb-4">
-        <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
-        <TabsTrigger value="past">Past</TabsTrigger>
-      </TabsList>
-      <TabsContent value="upcoming">
-        <Suspense fallback={<div>Loading upcoming meetings...</div>}>
-          <UpcomingMeetings />
-        </Suspense>
-      </TabsContent>
-      <TabsContent value="past">
-        <Suspense fallback={<div>Loading past meetings...</div>}>
-          <PastMeetings />
-        </Suspense>
-      </TabsContent>
-    </Tabs>
+    <div className="space-y-6">
+      <div className="text-center md:text-left">
+        <h3 className="text-2xl font-bold text-slate-800 mb-2">Your Meetings</h3>
+        <p className="text-slate-600">Manage your scheduled meetings and appointments</p>
+      </div>
+      
+      <Tabs defaultValue="upcoming" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 bg-slate-100 p-1 rounded-xl">
+          <TabsTrigger 
+            value="upcoming" 
+            className="data-[state=active]:bg-white data-[state=active]:text-purple-700 data-[state=active]:shadow-md rounded-lg transition-all duration-200"
+          >
+            <Clock className="w-4 h-4 mr-2" />
+            Upcoming
+          </TabsTrigger>
+          <TabsTrigger 
+            value="past" 
+            className="data-[state=active]:bg-white data-[state=active]:text-purple-700 data-[state=active]:shadow-md rounded-lg transition-all duration-200"
+          >
+            <Calendar className="w-4 h-4 mr-2" />
+            Past
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="upcoming" className="mt-6">
+          <Suspense fallback={<MeetingsLoadingFallback />}>
+            <UpcomingMeetings />
+          </Suspense>
+        </TabsContent>
+        
+        <TabsContent value="past" className="mt-6">
+          <Suspense fallback={<MeetingsLoadingFallback />}>
+            <PastMeetings />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function MeetingsLoadingFallback() {
+  return (
+    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="h-48 bg-slate-200 rounded-xl animate-pulse"></div>
+      ))}
+    </div>
   );
 }
 

@@ -1,8 +1,7 @@
 import React from "react";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ArrowRight, Calendar, Clock, LinkIcon, Sparkles, Zap, Users, Shield } from "lucide-react";
+import { ArrowRight, Sparkles, Zap, Users } from "lucide-react";
 import Link from "next/link";
 
 const features = [
@@ -68,7 +67,7 @@ const Home = () => {
             </h1>
             
             <p className="text-xl text-gray-300 mb-10 leading-relaxed">
-              The creative professional's secret weapon for seamless collaboration. 
+              The creative professional&apos;s secret weapon for seamless collaboration. 
               Schedule meetings that spark innovation, not frustration.
             </p>
             
