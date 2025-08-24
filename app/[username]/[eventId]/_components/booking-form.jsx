@@ -14,6 +14,7 @@ export default function BookingForm({ event, availability }) {
   const [selectedTime, setSelectedTime] = useState(null);
   const [formErrors, setFormErrors] = useState({});
   const [bookingResult, setBookingResult] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
 
 
@@ -46,6 +47,7 @@ export default function BookingForm({ event, availability }) {
     }
 
     setFormErrors({});
+    setIsSubmitting(true);
 
     try {
       // Create the date in the local timezone to avoid timezone conversion issues
@@ -94,13 +96,16 @@ export default function BookingForm({ event, availability }) {
           console.error("Failed to create booking:", errorMessage);
           alert(`Failed to create booking: ${errorMessage}`);
         }
-      } catch (directError) {
-        console.error("Direct error calling createBooking:", directError);
-        alert(`Direct error: ${directError.message}`);
+      } catch (error) {
+        console.error("Error calling createBooking:", error);
+        alert(`Error: ${error.message}`);
+      } finally {
+        setIsSubmitting(false);
       }
     } catch (error) {
       console.error("Error in onSubmit:", error);
       alert(`Error: ${error.message}`);
+      setIsSubmitting(false);
     }
   };
 
@@ -246,57 +251,17 @@ export default function BookingForm({ event, availability }) {
             </div>
           )}
           
-          {/* Simple test button to see if the action is working */}
-          <Button 
-            type="button" 
-            variant="outline"
-            className="w-full"
-            onClick={async () => {
-              console.log("Test button clicked");
-              console.log("Form state:", { selectedDate, selectedTime, event });
-              console.log("Form errors:", errors);
-              
-              // Test the booking action directly
-              try {
-                const testData = {
-                  eventId: event.id,
-                  name: "Test User",
-                  email: "test@example.com",
-                  startTime: new Date().toISOString(),
-                  endTime: new Date(Date.now() + 30 * 60000).toISOString(),
-                  additionalInfo: "Test booking"
-                };
-                console.log("Testing with data:", testData);
-                
-                const result = await fnCreateBooking(testData);
-                console.log("Test result:", result);
-              } catch (error) {
-                console.error("Test error:", error);
-              }
-            }}
-          >
-            Test Booking Action
-          </Button>
+
           
-          {/* Debug section to show form state */}
-          <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs">
-            <p className="font-semibold mb-2">Debug Info:</p>
-            <p>Selected Date: {selectedDate ? format(selectedDate, "yyyy-MM-dd") : "None"}</p>
-            <p>Selected Time: {selectedTime || "None"}</p>
-            <p>Event ID: {event?.id || "None"}</p>
-            <p>Form Errors: {Object.keys(formErrors).length > 0 ? JSON.stringify(formErrors) : "None"}</p>
-            <p>Booking Result: {bookingResult ? JSON.stringify(bookingResult.success) : "None"}</p>
-            <p>Loading: No (Direct call)</p>
-            <p>Has Data: No (Direct call)</p>
-            <p>Has Error: No (Direct call)</p>
-          </div>
+
           
           <Button 
             type="submit" 
+            disabled={isSubmitting}
             className="w-full"
             onClick={() => console.log("Submit button clicked!")}
           >
-            Schedule Event
+            {isSubmitting ? "Scheduling..." : "Schedule Event"}
           </Button>
         </form>
       )}
