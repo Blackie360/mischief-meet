@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import useFetch from "@/hooks/use-fetch";
-import { Link, Trash2, Calendar, Clock, Users, Eye } from "lucide-react";
+import { Link, Trash2, Clock, Users, Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 

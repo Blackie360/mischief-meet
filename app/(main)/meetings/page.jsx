@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { getUserMeetings } from "@/actions/meetings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MeetingList from "./_components/meeting-list";
-import { Calendar, Clock, Users } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 
 export const metadata = {
   title: "Your Meetings | Mischief Meet",

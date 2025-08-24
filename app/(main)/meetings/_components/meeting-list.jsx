@@ -64,7 +64,7 @@ export default function MeetingList({ meetings, type }) {
               <div className="flex items-start gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
                 <MessageSquare className="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" />
                 <p className="text-sm text-slate-700 italic">
-                  "{meeting.additionalInfo}"
+                  &ldquo;{meeting.additionalInfo}&rdquo;
                 </p>
               </div>
             )}

@@ -2,7 +2,7 @@ import React from "react";
 import AvailabilityForm from "./_components/availability-form";
 import { getUserAvailability } from "@/actions/availability";
 import { defaultAvailability } from "./data";
-import { Clock, Calendar, Settings } from "lucide-react";
+import { Clock } from "lucide-react";
 
 export default async function AvailabilityPage() {
   const availability = await getUserAvailability();
@@ -21,7 +21,7 @@ export default async function AvailabilityPage() {
           </div>
           <div>
             <h4 className="font-semibold text-slate-800">Weekly Schedule</h4>
-            <p className="text-sm text-slate-600">Configure when you're available for meetings</p>
+            <p className="text-sm text-slate-600">Configure when you&apos;re available for meetings</p>
           </div>
         </div>
         <AvailabilityForm initialData={availability || defaultAvailability} />

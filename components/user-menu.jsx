@@ -1,7 +1,7 @@
 "use client";
 
 import { UserButton } from "@clerk/nextjs";
-import { Calendar, BarChart, Users, Clock, Settings } from "lucide-react";
+import { Calendar, BarChart, Users, Clock } from "lucide-react";
 
 const UserMenu = () => {
   return (
