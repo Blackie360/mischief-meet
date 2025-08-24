@@ -56,9 +56,10 @@ export const eventSchema = z.object({
 });
 
 export const bookingSchema = z.object({
+  eventId: z.string().min(1, "Event ID is required"),
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email"),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format"),
-  time: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format"),
+  startTime: z.string().datetime("Start time must be a valid datetime"),
+  endTime: z.string().datetime("End time must be a valid datetime"),
   additionalInfo: z.string().optional(),
 });

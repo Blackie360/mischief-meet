@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +17,8 @@ import { Calendar, Link as LinkIcon, User, Clock, TrendingUp } from "lucide-reac
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
+  const [upcomingMeetings, setUpcomingMeetings] = useState([]);
+  const [loadingUpdates, setLoadingUpdates] = useState(false);
 
   const {
     register,
@@ -32,15 +34,25 @@ export default function DashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded]);
 
-  const {
-    loading: loadingUpdates,
-    data: upcomingMeetings,
-    fn: fnUpdates,
-  } = useFetch(getLatestUpdates);
-
+  // Fetch updates only when user is loaded and authenticated
   useEffect(() => {
-    (async () => await fnUpdates())();
-  }, [fnUpdates]);
+    const fetchUpdates = async () => {
+      if (isLoaded && user) {
+        setLoadingUpdates(true);
+        try {
+          const updates = await getLatestUpdates();
+          setUpcomingMeetings(updates || []);
+        } catch (error) {
+          console.error("Failed to fetch updates:", error);
+          setUpcomingMeetings([]);
+        } finally {
+          setLoadingUpdates(false);
+        }
+      }
+    };
+
+    fetchUpdates();
+  }, [isLoaded, user]);
 
   const { loading, error, fn: fnUpdateUsername } = useFetch(updateUsername);
 

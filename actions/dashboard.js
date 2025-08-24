@@ -9,8 +9,13 @@ export async function getLatestUpdates() {
     throw new Error("Unauthorized");
   }
 
+  try {
+
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
+    select: {
+      id: true
+    }
   });
 
   if (!user) {
@@ -38,4 +43,8 @@ export async function getLatestUpdates() {
   });
 
   return upcomingMeetings;
+  } catch (error) {
+    console.error("Error getting latest updates:", error);
+    throw new Error("Failed to get latest updates");
+  }
 }

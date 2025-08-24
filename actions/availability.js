@@ -12,17 +12,24 @@ import {
 } from "date-fns";
 
 export async function getUserAvailability() {
-  const { userId } = auth();
+  try {
+    const { userId } = auth();
 
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
 
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
     include: {
       availability: {
-        include: { days: true },
+        include: { 
+          days: {
+            orderBy: {
+              day: 'asc'
+            }
+          } 
+        },
       },
     },
   });
@@ -59,18 +66,33 @@ export async function getUserAvailability() {
   });
 
   return availabilityData;
+  } catch (error) {
+    console.error("Error getting user availability:", error);
+    throw new Error("Failed to get user availability");
+  }
 }
 
 export async function updateAvailability(data) {
-  const { userId } = auth();
+  try {
+    const { userId } = auth();
 
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
+    if (!userId) {
+      throw new Error("Unauthorized");
+    }
 
-  const user = await db.user.findUnique({
+    if (!data || typeof data !== 'object') {
+      throw new Error("Invalid availability data");
+    }
+
+    const user = await db.user.findUnique({
     where: { clerkUserId: userId },
-    include: { availability: true },
+    include: { 
+      availability: {
+        include: {
+          days: true
+        }
+      } 
+    },
   });
 
   if (!user) {
@@ -118,19 +140,27 @@ export async function updateAvailability(data) {
   }
 
   return { success: true };
+  } catch (error) {
+    console.error("Error updating availability:", error);
+    throw new Error("Failed to update availability");
+  }
 }
 
 export async function getEventAvailability(eventId) {
-  const event = await db.event.findUnique({
+  try {
+    if (!eventId) {
+      throw new Error("Event ID is required");
+    }
+
+    const event = await db.event.findUnique({
     where: { id: eventId },
     include: {
       user: {
         include: {
           availability: {
-            select: {
-              days: true,
-              timeGap: true,
-            },
+            include: {
+              days: true
+            }
           },
           bookings: {
             select: {
@@ -168,7 +198,7 @@ export async function getEventAvailability(eventId) {
         event.duration,
         bookings,
         dateStr,
-        availability.timeGap
+        availability.timeGap || 0
       );
 
       availableDates.push({
@@ -179,6 +209,10 @@ export async function getEventAvailability(eventId) {
   }
 
   return availableDates;
+  } catch (error) {
+    console.error("Error getting event availability:", error);
+    throw new Error("Failed to get event availability");
+  }
 }
 
 function generateAvailableTimeSlots(

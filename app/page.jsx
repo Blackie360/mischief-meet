@@ -1,8 +1,13 @@
+"use client";
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ArrowRight, Sparkles, Zap, Users } from "lucide-react";
 import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const features = [
   {
@@ -39,6 +44,29 @@ const howItWorks = [
 ];
 
 const Home = () => {
+  const { isSignedIn, isLoaded } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.push("/dashboard");
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  // Show loading state while checking authentication
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  // Don't render the landing page if user is signed in
+  if (isSignedIn) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
       {/* Noise Grain Overlay */}
@@ -155,7 +183,7 @@ const Home = () => {
                     <div className="hidden lg:block absolute top-1/2 left-full w-full h-0.5 bg-gradient-to-br from-purple-500/30 to-blue-500/30 transform -translate-y-1/2"></div>
                   )}
                 </div>
-                <h3 className="font-bold text-xl mb-3 text-white group-hover:text-purple-300 transition-colors">
+                <h3 className="text-xl font-bold mb-3 text-white group-hover:text-purple-300 transition-colors">
                   {step.step}
                 </h3>
                 <p className="text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors">
