@@ -26,7 +26,9 @@ export async function getLatestUpdates() {
 
   const upcomingMeetings = await db.booking.findMany({
     where: {
-      userId: user.id,
+      event: {
+        userId: user.id, // Show bookings for events created by this user
+      },
       startTime: { gte: now },
     },
     include: {
@@ -42,7 +44,30 @@ export async function getLatestUpdates() {
     take: 3,
   });
 
-  return upcomingMeetings;
+  // Get total counts
+  const [upcomingCount, pastCount] = await Promise.all([
+    db.booking.count({
+      where: {
+        event: { userId: user.id },
+        startTime: { gte: now },
+      },
+    }),
+    db.booking.count({
+      where: {
+        event: { userId: user.id },
+        startTime: { lt: now },
+      },
+    }),
+  ]);
+
+  return {
+    upcomingMeetings,
+    counts: {
+      upcoming: upcomingCount,
+      past: pastCount,
+      total: upcomingCount + pastCount,
+    },
+  };
   } catch (error) {
     console.error("Error getting latest updates:", error);
     throw new Error("Failed to get latest updates");

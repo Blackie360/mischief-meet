@@ -29,7 +29,9 @@ export async function getUserMeetings(type = "upcoming") {
 
   const meetings = await db.booking.findMany({
     where: {
-      userId: user.id,
+      event: {
+        userId: user.id, // Show bookings for events created by this user
+      },
       startTime: type === "upcoming" ? { gte: now } : { lt: now },
     },
     include: {
@@ -76,17 +78,20 @@ export async function cancelMeeting(meetingId) {
   const meeting = await db.booking.findUnique({
     where: { id: meetingId },
     include: { 
-      event: true, 
-      user: {
-        select: {
-          id: true,
-          clerkUserId: true
+      event: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              clerkUserId: true
+            }
+          }
         }
-      } 
+      }
     },
   });
 
-  if (!meeting || meeting.userId !== user.id) {
+  if (!meeting || meeting.event.userId !== user.id) {
     throw new Error("Meeting not found or unauthorized");
   }
 
@@ -94,7 +99,7 @@ export async function cancelMeeting(meetingId) {
   let token;
   try {
     const { data } = await clerkClient.users.getUserOauthAccessToken(
-      meeting.user.clerkUserId,
+      meeting.event.user.clerkUserId,
       "oauth_google"
     );
 

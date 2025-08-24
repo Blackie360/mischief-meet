@@ -1,68 +1,107 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { DayPicker } from "react-day-picker";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createBooking } from "@/actions/bookings";
-import { bookingSchema } from "@/app/lib/validators";
 import "react-day-picker/style.css";
-import useFetch from "@/hooks/use-fetch";
 
 export default function BookingForm({ event, availability }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
+  const [bookingResult, setBookingResult] = useState(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-  } = useForm({
-    resolver: zodResolver(bookingSchema),
-  });
 
-  useEffect(() => {
-    if (selectedDate) {
-      setValue("date", format(selectedDate, "yyyy-MM-dd"));
+
+  // We're calling createBooking directly now, so we don't need useFetch
+
+  const onSubmit = async (formData) => {
+    console.log("Form submitted with data:", formData);
+    console.log("Selected date:", selectedDate);
+    console.log("Selected time:", selectedTime);
+    console.log("Event:", event);
+
+    // Basic validation
+    const errors = {};
+    if (!formData.name || formData.name.trim() === "") {
+      errors.name = "Name is required";
     }
-  }, [selectedDate, setValue]);
-
-  useEffect(() => {
-    if (selectedTime) {
-      setValue("time", selectedTime);
+    if (!formData.email || formData.email.trim() === "") {
+      errors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = "Please enter a valid email";
     }
-  }, [selectedTime, setValue]);
-
-  const { loading, data, fn: fnCreateBooking } = useFetch(createBooking);
-
-  const onSubmit = async (data) => {
-    console.log("Form submitted with data:", data);
-
     if (!selectedDate || !selectedTime) {
-      console.error("Date or time not selected");
+      errors.dateTime = "Please select a date and time";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      console.error("Validation errors:", errors);
       return;
     }
 
-    const startTime = new Date(
-      `${format(selectedDate, "yyyy-MM-dd")}T${selectedTime}`
-    );
-    const endTime = new Date(startTime.getTime() + event.duration * 60000);
+    setFormErrors({});
 
-    const bookingData = {
-      eventId: event.id,
-      name: data.name,
-      email: data.email,
-      startTime: startTime.toISOString(),
-      endTime: endTime.toISOString(),
-      additionalInfo: data.additionalInfo,
-    };
+    try {
+      // Create the date in the local timezone to avoid timezone conversion issues
+      const startTime = new Date(
+        `${format(selectedDate, "yyyy-MM-dd")}T${selectedTime}:00`
+      );
+      const endTime = new Date(startTime.getTime() + event.duration * 60000);
+      
+      console.log("Local start time:", startTime.toString());
+      console.log("Local end time:", endTime.toString());
+      console.log("ISO start time:", startTime.toISOString());
+      console.log("ISO end time:", endTime.toISOString());
 
-    await fnCreateBooking(bookingData);
+      const bookingData = {
+        eventId: event.id,
+        name: formData.name,
+        email: formData.email,
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString(),
+        additionalInfo: formData.additionalInfo,
+      };
+
+      console.log("Booking data to send:", bookingData);
+
+      console.log("About to call createBooking directly with:", bookingData);
+      
+      // Call the server action directly to bypass useFetch
+      try {
+        const result = await createBooking(bookingData);
+        console.log("Direct createBooking result:", result);
+        console.log("Result type:", typeof result);
+        console.log("Result success:", result?.success);
+        console.log("Result error:", result?.error);
+        
+        if (result && result.success) {
+          // Success - the form will show the success message
+          console.log("Booking created successfully:", result);
+          setBookingResult(result);
+          // Reset form after successful submission
+          setSelectedDate(null);
+          setSelectedTime(null);
+          setFormErrors({});
+        } else {
+          // Error - show error message
+          const errorMessage = result?.error || "Unknown error occurred";
+          console.error("Failed to create booking:", errorMessage);
+          alert(`Failed to create booking: ${errorMessage}`);
+        }
+      } catch (directError) {
+        console.error("Direct error calling createBooking:", directError);
+        alert(`Direct error: ${directError.message}`);
+      }
+    } catch (error) {
+      console.error("Error in onSubmit:", error);
+      alert(`Error: ${error.message}`);
+    }
   };
 
   const availableDays = availability.map((day) => new Date(day.date));
@@ -73,23 +112,35 @@ export default function BookingForm({ event, availability }) {
       )?.slots || []
     : [];
 
-  if (data) {
+  if (bookingResult?.success) {
     return (
-      <div className="text-center p-10 border bg-white">
-        <h2 className="text-2xl font-bold mb-4">Booking successful!</h2>
-        {data.meetLink && (
-          <p>
-            Join the meeting:{" "}
+      <div className="text-center p-10 border bg-white rounded-lg shadow-lg">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold mb-4 text-green-800">Booking Successful!</h2>
+        <p className="text-gray-600 mb-4">Your meeting has been scheduled successfully.</p>
+        
+        {bookingResult.meetLink && (
+          <div className="bg-blue-50 p-4 rounded-lg mb-4">
+            <p className="text-sm text-blue-800 mb-2">Join your meeting using this link:</p>
             <a
-              href={data.meetLink}
+              href={bookingResult.meetLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-500 hover:underline"
+              className="text-blue-600 hover:text-blue-800 font-medium hover:underline break-all"
             >
-              {data.meetLink}
+              {bookingResult.meetLink}
             </a>
-          </p>
+          </div>
         )}
+        
+        <div className="text-sm text-gray-500">
+          <p>A confirmation email has been sent to your email address.</p>
+          <p>You can also view this booking in your calendar.</p>
+        </div>
       </div>
     );
   }
@@ -138,31 +189,114 @@ export default function BookingForm({ event, availability }) {
         </div>
       </div>
       {selectedTime && (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            console.log("Form onSubmit triggered");
+            console.log("Form element:", e.target);
+            console.log("Form data:", new FormData(e.target));
+            
+            // Get the form data manually
+            const formData = new FormData(e.target);
+            const formValues = {
+              name: formData.get('name'),
+              email: formData.get('email'),
+              additionalInfo: formData.get('additionalInfo'),
+            };
+            
+            console.log("Form values:", formValues);
+            
+            // Call our custom submission handler
+            onSubmit(formValues);
+          }} 
+          className="space-y-4"
+        >
           <div>
-            <Input {...register("name")} placeholder="Your Name" />
-            {errors.name && (
-              <p className="text-red-500 text-sm">{errors.name.message}</p>
+            <Input 
+              name="name"
+              placeholder="Your Name" 
+              onChange={(e) => console.log("Name input changed:", e.target.value)}
+            />
+            {formErrors.name && (
+              <p className="text-red-500 text-sm">{formErrors.name}</p>
             )}
           </div>
           <div>
             <Input
-              {...register("email")}
+              name="email"
               type="email"
               placeholder="Your Email"
+              onChange={(e) => console.log("Email input changed:", e.target.value)}
             />
-            {errors.email && (
-              <p className="text-red-500 text-sm">{errors.email.message}</p>
+            {formErrors.email && (
+              <p className="text-red-500 text-sm">{formErrors.email}</p>
             )}
           </div>
           <div>
             <Textarea
-              {...register("additionalInfo")}
+              name="additionalInfo"
               placeholder="Additional Information"
+              onChange={(e) => console.log("Additional info changed:", e.target.value)}
             />
           </div>
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "Scheduling..." : "Schedule Event"}
+          
+          {formErrors.dateTime && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-sm">{formErrors.dateTime}</p>
+            </div>
+          )}
+          
+          {/* Simple test button to see if the action is working */}
+          <Button 
+            type="button" 
+            variant="outline"
+            className="w-full"
+            onClick={async () => {
+              console.log("Test button clicked");
+              console.log("Form state:", { selectedDate, selectedTime, event });
+              console.log("Form errors:", errors);
+              
+              // Test the booking action directly
+              try {
+                const testData = {
+                  eventId: event.id,
+                  name: "Test User",
+                  email: "test@example.com",
+                  startTime: new Date().toISOString(),
+                  endTime: new Date(Date.now() + 30 * 60000).toISOString(),
+                  additionalInfo: "Test booking"
+                };
+                console.log("Testing with data:", testData);
+                
+                const result = await fnCreateBooking(testData);
+                console.log("Test result:", result);
+              } catch (error) {
+                console.error("Test error:", error);
+              }
+            }}
+          >
+            Test Booking Action
+          </Button>
+          
+          {/* Debug section to show form state */}
+          <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs">
+            <p className="font-semibold mb-2">Debug Info:</p>
+            <p>Selected Date: {selectedDate ? format(selectedDate, "yyyy-MM-dd") : "None"}</p>
+            <p>Selected Time: {selectedTime || "None"}</p>
+            <p>Event ID: {event?.id || "None"}</p>
+            <p>Form Errors: {Object.keys(formErrors).length > 0 ? JSON.stringify(formErrors) : "None"}</p>
+            <p>Booking Result: {bookingResult ? JSON.stringify(bookingResult.success) : "None"}</p>
+            <p>Loading: No (Direct call)</p>
+            <p>Has Data: No (Direct call)</p>
+            <p>Has Error: No (Direct call)</p>
+          </div>
+          
+          <Button 
+            type="submit" 
+            className="w-full"
+            onClick={() => console.log("Submit button clicked!")}
+          >
+            Schedule Event
           </Button>
         </form>
       )}

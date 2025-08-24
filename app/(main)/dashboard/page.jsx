@@ -12,13 +12,18 @@ import { BarLoader } from "react-spinners";
 import useFetch from "@/hooks/use-fetch";
 import { usernameSchema } from "@/app/lib/validators";
 import { getLatestUpdates } from "@/actions/dashboard";
+import { getEventCreatorBookings } from "@/actions/bookings";
+import { getUserEvents } from "@/actions/events";
 import { format } from "date-fns";
 import { Calendar, Link as LinkIcon, User, Clock, TrendingUp } from "lucide-react";
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
   const [upcomingMeetings, setUpcomingMeetings] = useState([]);
+  const [bookingCounts, setBookingCounts] = useState({ upcoming: 0, past: 0, total: 0 });
+  const [userEvents, setUserEvents] = useState([]);
   const [loadingUpdates, setLoadingUpdates] = useState(false);
+  const [loadingEvents, setLoadingEvents] = useState(false);
 
   const {
     register,
@@ -41,10 +46,12 @@ export default function DashboardPage() {
         setLoadingUpdates(true);
         try {
           const updates = await getLatestUpdates();
-          setUpcomingMeetings(updates || []);
+          setUpcomingMeetings(updates?.upcomingMeetings || []);
+          setBookingCounts(updates?.counts || { upcoming: 0, past: 0, total: 0 });
         } catch (error) {
           console.error("Failed to fetch updates:", error);
           setUpcomingMeetings([]);
+          setBookingCounts({ upcoming: 0, past: 0, total: 0 });
         } finally {
           setLoadingUpdates(false);
         }
@@ -52,6 +59,26 @@ export default function DashboardPage() {
     };
 
     fetchUpdates();
+  }, [isLoaded, user]);
+
+  // Fetch user events
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (isLoaded && user) {
+        setLoadingEvents(true);
+        try {
+          const eventsData = await getUserEvents();
+          setUserEvents(eventsData?.events || []);
+        } catch (error) {
+          console.error("Failed to fetch events:", error);
+          setUserEvents([]);
+        } finally {
+          setLoadingEvents(false);
+        }
+      }
+    };
+
+    fetchEvents();
   }, [isLoaded, user]);
 
   const { loading, error, fn: fnUpdateUsername } = useFetch(updateUsername);
@@ -144,6 +171,109 @@ export default function DashboardPage() {
               <BarLoader width={"60%"} color="#8b5cf6" />
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* User Events Card */}
+      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+        <CardHeader className="bg-gradient-to-r from-slate-50 to-indigo-50 rounded-t-lg border-b border-slate-200/50">
+          <CardTitle className="flex items-center gap-3 text-slate-800">
+            <Calendar className="w-6 h-6 text-indigo-600" />
+            Your Events
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          {!loadingEvents ? (
+            <div className="space-y-4">
+              {userEvents && userEvents.length > 0 ? (
+                <div className="space-y-3">
+                  {userEvents.slice(0, 3).map((event) => (
+                    <div key={event.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200/50 hover:shadow-md transition-all duration-200">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-slate-800">{event.title}</h4>
+                        <p className="text-sm text-slate-600">
+                          {event._count.bookings} booking{event._count.bookings !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-slate-500">{event.duration} min</p>
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          onClick={() => window.location.href = `/${user?.username}/${event.id}`}
+                          className="mt-1"
+                        >
+                          View
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  {userEvents.length > 3 && (
+                    <div className="text-center pt-2">
+                      <Button 
+                        variant="outline"
+                        onClick={() => window.location.href = '/events'}
+                        className="w-full"
+                      >
+                        View All Events ({userEvents.length})
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Calendar className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-500 text-lg">No events created yet</p>
+                  <p className="text-slate-400 text-sm">Create your first event to start receiving bookings</p>
+                  <Button 
+                    onClick={() => window.location.href = '/events'}
+                    className="mt-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                  >
+                    Create Event
+                  </Button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center py-8">
+              <BarLoader width={"60%"} color="#8b5cf6" />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* All Bookings Overview Card */}
+      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+        <CardHeader className="bg-gradient-to-r from-slate-50 to-green-50 rounded-t-lg border-b border-slate-200/50">
+          <CardTitle className="flex items-center gap-3 text-slate-800">
+            <Calendar className="w-6 h-6 text-green-600" />
+            All Bookings Overview
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+              <p className="text-2xl font-bold text-green-700">{bookingCounts.upcoming}</p>
+              <p className="text-green-600 text-sm">Upcoming</p>
+            </div>
+            <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-2xl font-bold text-blue-700">{bookingCounts.past}</p>
+              <p className="text-blue-600 text-sm">Past</p>
+            </div>
+            <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+              <p className="text-2xl font-bold text-purple-700">{bookingCounts.total}</p>
+              <p className="text-purple-600 text-sm">Total</p>
+            </div>
+          </div>
+          <div className="text-center">
+            <p className="text-slate-600 text-sm mb-3">View detailed booking information in the Meetings section</p>
+            <Button 
+              onClick={() => window.location.href = '/meetings'}
+              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
+            >
+              View All Bookings
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
