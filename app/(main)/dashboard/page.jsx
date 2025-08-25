@@ -99,41 +99,41 @@ export default function DashboardPage() {
   return (
     <div className="grid gap-6 grid-cols-1 md:grid-cols-6 xl:grid-cols-12 auto-rows-[minmax(140px,_auto)]">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-2xl col-span-1 md:col-span-6 xl:col-span-8 row-span-2">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="p-3 bg-white/20 rounded-full">
-            <User className="w-8 h-8 text-white" />
+      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 rounded-2xl p-5 md:p-8 text-white shadow-2xl col-span-1 md:col-span-6 xl:col-span-8 row-span-2">
+        <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
+          <div className="p-2 md:p-3 bg-white/20 rounded-full">
+            <User className="w-6 h-6 md:w-8 md:h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Welcome back, {user?.firstName}!</h1>
-            <p className="text-purple-100 text-lg">Ready to schedule your next meeting?</p>
+            <h1 className="text-2xl md:text-3xl font-bold">Welcome back, {user?.firstName}!</h1>
+            <p className="text-purple-100 text-sm md:text-lg">Ready to schedule your next meeting?</p>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 mt-4 md:mt-6">
+          <div className="bg-white/10 rounded-xl p-3 md:p-4 backdrop-blur-sm">
             <div className="flex items-center gap-3">
-              <Calendar className="w-6 h-6 text-purple-200" />
+              <Calendar className="w-5 h-5 md:w-6 md:h-6 text-purple-200" />
               <div>
-                <p className="text-2xl font-bold">{upcomingMeetings?.length || 0}</p>
-                <p className="text-purple-100">Upcoming Meetings</p>
+                <p className="text-xl md:text-2xl font-bold">{upcomingMeetings?.length || 0}</p>
+                <p className="text-purple-100 text-sm md:text-base">Upcoming Meetings</p>
               </div>
             </div>
           </div>
-          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+          <div className="bg-white/10 rounded-xl p-3 md:p-4 backdrop-blur-sm">
             <div className="flex items-center gap-3">
-              <Clock className="w-6 h-6 text-purple-200" />
+              <Clock className="w-5 h-5 md:w-6 md:h-6 text-purple-200" />
               <div>
-                <p className="text-2xl font-bold">24/7</p>
-                <p className="text-purple-100">Availability</p>
+                <p className="text-xl md:text-2xl font-bold">24/7</p>
+                <p className="text-purple-100 text-sm md:text-base">Availability</p>
               </div>
             </div>
           </div>
-          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+          <div className="bg-white/10 rounded-xl p-3 md:p-4 backdrop-blur-sm">
             <div className="flex items-center gap-3">
-              <TrendingUp className="w-6 h-6 text-purple-200" />
+              <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-purple-200" />
               <div>
-                <p className="text-2xl font-bold">Active</p>
-                <p className="text-purple-100">Scheduling</p>
+                <p className="text-xl md:text-2xl font-bold">Active</p>
+                <p className="text-purple-100 text-sm md:text-base">Scheduling</p>
               </div>
             </div>
           </div>
