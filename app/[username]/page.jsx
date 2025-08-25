@@ -27,16 +27,26 @@ export default async function UserProfilePage({ params }) {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col items-center mb-8">
-        <Avatar className="w-24 h-24 mb-4">
-          <AvatarImage src={user.imageUrl} alt={user.name} />
-          <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-        </Avatar>
-        <h1 className="text-3xl font-bold mb-2">{user.name}</h1>
-        <p className="text-gray-600 text-center">
-          Welcome to my scheduling page. Please select an event below to book a
-          call with me.
-        </p>
+      <div className="max-w-3xl mx-auto w-full mb-10">
+        <div className="relative rounded-3xl border bg-white/90 shadow-xl">
+          <div className="absolute inset-x-0 top-0 h-1 rounded-t-3xl bg-gradient-to-r from-purple-500 via-blue-500 to-indigo-500" />
+          <div className="p-6 md:p-8 flex flex-col items-center text-center">
+            <div className="relative mb-4">
+              <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-purple-200 to-blue-200 blur" />
+              <Avatar className="relative w-24 h-24 ring-4 ring-white">
+                <AvatarImage src={user.imageUrl} alt={user.name} />
+                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+            </div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-800">{user.name}</h1>
+            <div className="mt-2 inline-flex items-center gap-2 text-sm text-slate-500">
+              <span>✨ Friendly • Efficient • On time</span>
+            </div>
+            <p className="mt-3 text-slate-600 max-w-2xl">
+              Choose an event type below to instantly book a time that works for you.
+            </p>
+          </div>
+        </div>
       </div>
 
       {user.events.length === 0 ? (

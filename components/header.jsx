@@ -50,8 +50,8 @@ async function Header() {
         <SignedOut>
           <SignInButton forceRedirectUrl="/dashboard">
             <Button 
-              variant="outline" 
-              className="border-2 border-white/80 text-white hover:bg-white hover:text-purple-700 transition-all duration-300 shadow-md hover:shadow-lg font-medium"
+              variant="default"
+              className="bg-white/95 backdrop-blur-sm text-purple-700 hover:bg-white hover:text-purple-800 border-2 border-white/50 transition-all duration-300 shadow-lg hover:shadow-xl font-medium"
             >
               Login
             </Button>
