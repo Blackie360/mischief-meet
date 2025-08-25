@@ -21,10 +21,6 @@ export default function BookingForm({ event, availability }) {
   // We're calling createBooking directly now, so we don't need useFetch
 
   const onSubmit = async (formData) => {
-    console.log("Form submitted with data:", formData);
-    console.log("Selected date:", selectedDate);
-    console.log("Selected time:", selectedTime);
-    console.log("Event:", event);
 
     // Basic validation
     const errors = {};
@@ -42,7 +38,6 @@ export default function BookingForm({ event, availability }) {
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
-      console.error("Validation errors:", errors);
       return;
     }
 
@@ -56,11 +51,6 @@ export default function BookingForm({ event, availability }) {
       );
       const endTime = new Date(startTime.getTime() + event.duration * 60000);
       
-      console.log("Local start time:", startTime.toString());
-      console.log("Local end time:", endTime.toString());
-      console.log("ISO start time:", startTime.toISOString());
-      console.log("ISO end time:", endTime.toISOString());
-
       const bookingData = {
         eventId: event.id,
         name: formData.name,
@@ -69,22 +59,13 @@ export default function BookingForm({ event, availability }) {
         endTime: endTime.toISOString(),
         additionalInfo: formData.additionalInfo,
       };
-
-      console.log("Booking data to send:", bookingData);
-
-      console.log("About to call createBooking directly with:", bookingData);
       
       // Call the server action directly to bypass useFetch
       try {
         const result = await createBooking(bookingData);
-        console.log("Direct createBooking result:", result);
-        console.log("Result type:", typeof result);
-        console.log("Result success:", result?.success);
-        console.log("Result error:", result?.error);
         
         if (result && result.success) {
           // Success - the form will show the success message
-          console.log("Booking created successfully:", result);
           setBookingResult(result);
           // Reset form after successful submission
           setSelectedDate(null);
@@ -93,17 +74,14 @@ export default function BookingForm({ event, availability }) {
         } else {
           // Error - show error message
           const errorMessage = result?.error || "Unknown error occurred";
-          console.error("Failed to create booking:", errorMessage);
           alert(`Failed to create booking: ${errorMessage}`);
         }
       } catch (error) {
-        console.error("Error calling createBooking:", error);
         alert(`Error: ${error.message}`);
       } finally {
         setIsSubmitting(false);
       }
     } catch (error) {
-      console.error("Error in onSubmit:", error);
       alert(`Error: ${error.message}`);
       setIsSubmitting(false);
     }
@@ -197,9 +175,6 @@ export default function BookingForm({ event, availability }) {
         <form 
           onSubmit={(e) => {
             e.preventDefault();
-            console.log("Form onSubmit triggered");
-            console.log("Form element:", e.target);
-            console.log("Form data:", new FormData(e.target));
             
             // Get the form data manually
             const formData = new FormData(e.target);
@@ -208,8 +183,6 @@ export default function BookingForm({ event, availability }) {
               email: formData.get('email'),
               additionalInfo: formData.get('additionalInfo'),
             };
-            
-            console.log("Form values:", formValues);
             
             // Call our custom submission handler
             onSubmit(formValues);
@@ -220,7 +193,6 @@ export default function BookingForm({ event, availability }) {
             <Input 
               name="name"
               placeholder="Your Name" 
-              onChange={(e) => console.log("Name input changed:", e.target.value)}
             />
             {formErrors.name && (
               <p className="text-red-500 text-sm">{formErrors.name}</p>
@@ -231,7 +203,6 @@ export default function BookingForm({ event, availability }) {
               name="email"
               type="email"
               placeholder="Your Email"
-              onChange={(e) => console.log("Email input changed:", e.target.value)}
             />
             {formErrors.email && (
               <p className="text-red-500 text-sm">{formErrors.email}</p>
@@ -241,7 +212,6 @@ export default function BookingForm({ event, availability }) {
             <Textarea
               name="additionalInfo"
               placeholder="Additional Information"
-              onChange={(e) => console.log("Additional info changed:", e.target.value)}
             />
           </div>
           
@@ -259,7 +229,6 @@ export default function BookingForm({ event, availability }) {
             type="submit" 
             disabled={isSubmitting}
             className="w-full"
-            onClick={() => console.log("Submit button clicked!")}
           >
             {isSubmitting ? "Scheduling..." : "Schedule Event"}
           </Button>

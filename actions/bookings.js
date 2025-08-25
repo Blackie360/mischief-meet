@@ -4,6 +4,9 @@ import { db } from "@/lib/prisma";
 import { clerkClient } from "@clerk/nextjs/server";
 import { google } from "googleapis";
 import { bookingSchema } from "@/app/lib/validators";
+import { sendEmail } from "@/lib/mailer";
+import BookingConfirmation from "@/components/emails/BookingConfirmation";
+import BookingNotification from "@/components/emails/BookingNotification";
 
 export async function createBooking(bookingData) {
   console.log("createBooking called with:", bookingData);
@@ -69,7 +72,7 @@ export async function createBooking(bookingData) {
     let meetLink, googleEventId;
     try {
       console.log("Calendar event data:", {
-        summary: `${validatedData.name} - ${event.title}`,
+        summary: event.title,
         start: validatedData.startTime,
         end: validatedData.endTime,
         attendees: [validatedData.email, event.user.email]
@@ -79,7 +82,7 @@ export async function createBooking(bookingData) {
         calendarId: "primary",
         conferenceDataVersion: 1,
         requestBody: {
-          summary: `${validatedData.name} - ${event.title}`,
+          summary: event.title,
           description: validatedData.additionalInfo,
           start: { dateTime: validatedData.startTime },
           end: { dateTime: validatedData.endTime },
@@ -131,6 +134,43 @@ export async function createBooking(bookingData) {
     });
 
     console.log("Database booking created successfully:", booking);
+
+    // Send emails (best-effort, don't block success)
+    try {
+      const hostName = event.user.name || "Host";
+      // Attendee confirmation
+      await sendEmail({
+        to: validatedData.email,
+        subject: `Your booking for ${event.title} is confirmed`,
+        react: BookingConfirmation({
+          attendeeName: validatedData.name,
+          hostName,
+          eventTitle: event.title,
+          startTime: validatedData.startTime,
+          endTime: validatedData.endTime,
+          meetLink,
+        }),
+      });
+
+      // Host notification
+      if (event.user.email) {
+        await sendEmail({
+          to: event.user.email,
+          subject: `New booking: ${validatedData.name} for ${event.title}`,
+          react: BookingNotification({
+            hostName,
+            attendeeName: validatedData.name,
+            attendeeEmail: validatedData.email,
+            eventTitle: event.title,
+            startTime: validatedData.startTime,
+            endTime: validatedData.endTime,
+            meetLink,
+          }),
+        });
+      }
+    } catch (emailError) {
+      console.error("Failed to send booking emails:", emailError);
+    }
     const result = { success: true, booking, meetLink };
     console.log("Returning result:", result);
     return result;

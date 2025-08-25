@@ -3,6 +3,8 @@
 import { db } from "@/lib/prisma";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { google } from "googleapis";
+import { sendEmail } from "@/lib/mailer";
+import BookingCancellation from "@/components/emails/BookingCancellation";
 
 export async function getUserMeetings(type = "upcoming") {
   const { userId } = auth();
@@ -83,7 +85,9 @@ export async function cancelMeeting(meetingId) {
           user: {
             select: {
               id: true,
-              clerkUserId: true
+              clerkUserId: true,
+              name: true,
+              email: true
             }
           }
         }
@@ -129,6 +133,38 @@ export async function cancelMeeting(meetingId) {
   await db.booking.delete({
     where: { id: meetingId },
   });
+
+  // Send cancellation emails (best-effort)
+  try {
+    const attendeeName = meeting.name || meeting.email || "Attendee";
+    const hostName = meeting.event.user.name || "Host";
+
+    if (meeting.email) {
+      await sendEmail({
+        to: meeting.email,
+        subject: `Booking cancelled: ${meeting.event.title}`,
+        react: BookingCancellation({
+          recipientName: attendeeName,
+          eventTitle: meeting.event.title,
+          startTime: meeting.startTime,
+        }),
+      });
+    }
+
+    if (meeting.event.user.email) {
+      await sendEmail({
+        to: meeting.event.user.email,
+        subject: `Booking cancelled: ${meeting.event.title}`,
+        react: BookingCancellation({
+          recipientName: hostName,
+          eventTitle: meeting.event.title,
+          startTime: meeting.startTime,
+        }),
+      });
+    }
+  } catch (emailError) {
+    console.error("Failed to send cancellation emails:", emailError);
+  }
 
   return { success: true };
 }
