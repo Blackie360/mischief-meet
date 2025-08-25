@@ -27,7 +27,8 @@ export default function BookingDrawer() {
 
   const bookingUrl = useMemo(() => {
     if (!bookingUsername || !bookingEventId) return null;
-    const base = typeof window !== "undefined" ? window.location.origin : "";
+    if (typeof window === "undefined") return null;
+    const base = window.location.origin;
     return `${base}/${bookingUsername}/${bookingEventId}`;
   }, [bookingUsername, bookingEventId]);
 

@@ -24,6 +24,7 @@ export default function DashboardPage() {
   const [userEvents, setUserEvents] = useState([]);
   const [loadingUpdates, setLoadingUpdates] = useState(false);
   const [loadingEvents, setLoadingEvents] = useState(false);
+  const [clientOrigin, setClientOrigin] = useState("");
 
   const {
     register,
@@ -38,6 +39,13 @@ export default function DashboardPage() {
     setValue("username", user?.username);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded]);
+
+  // Avoid hydration mismatch by reading window origin after mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setClientOrigin(window.location.origin);
+    }
+  }, []);
 
   // Fetch updates only when user is loaded and authenticated
   useEffect(() => {
@@ -292,7 +300,7 @@ export default function DashboardPage() {
                 Customize your scheduling link
               </label>
               <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <span className="text-slate-500 font-mono text-sm">{window?.location.origin}/</span>
+                <span className="text-slate-500 font-mono text-sm" suppressHydrationWarning>{clientOrigin ? `${clientOrigin}/` : ""}</span>
                 <Input 
                   {...register("username")} 
                   placeholder="username" 

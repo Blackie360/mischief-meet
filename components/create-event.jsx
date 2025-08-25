@@ -30,7 +30,8 @@ export default function CreateEventDrawer() {
   const handleClose = () => {
     setIsOpen(false);
     if (searchParams.get("create") === "true") {
-      router.replace(window?.location.pathname);
+      const pathname = typeof window !== "undefined" ? window.location.pathname : "/events";
+      router.replace(pathname);
     }
   };
 
