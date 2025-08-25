@@ -3,6 +3,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import Header from "@/components/header";
 import CreateEventDrawer from "@/components/create-event";
+import BookingDrawer from "@/components/booking-drawer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,6 +23,7 @@ export default function RootLayout({ children }) {
           </main>
           
           <CreateEventDrawer />
+          <BookingDrawer />
         </body>
       </html>
     </ClerkProvider>

@@ -42,10 +42,12 @@ export default function EventCard({ event, username, isPublic = false }) {
 
   const handleCardClick = (e) => {
     if (e.target.tagName !== "BUTTON" && e.target.tagName !== "SVG") {
-      window?.open(
-        `${window?.location.origin}/${username}/${event.id}`,
-        "_blank"
-      );
+      const url = new URL(window?.location.href);
+      url.searchParams.set("book_username", username);
+      url.searchParams.set("book_eventId", event.id);
+      window.history.replaceState(null, "", url.toString());
+      // Trigger via query param; BookingDrawer listens to it
+      // No page navigation needed
     }
   };
 
@@ -113,6 +115,12 @@ export default function EventCard({ event, username, isPublic = false }) {
         <CardFooter className="pt-0">
           <Button
             variant="outline"
+            onClick={() => {
+              const url = new URL(window?.location.href);
+              url.searchParams.set("book_username", username);
+              url.searchParams.set("book_eventId", event.id);
+              window.history.replaceState(null, "", url.toString());
+            }}
             className="w-full bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200 text-purple-700 hover:text-purple-800 transition-all duration-200 hover:shadow-md"
           >
             <Eye className="mr-2 h-4 w-4" />
