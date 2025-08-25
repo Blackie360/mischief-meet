@@ -21,9 +21,8 @@ export default function EventCard({ event, username, isPublic = false }) {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(
-        `${window?.location.origin}/${username}/${event.id}`
-      );
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      await navigator.clipboard.writeText(`${origin}/${username}/${event.id}`);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
     } catch (err) {
@@ -42,10 +41,15 @@ export default function EventCard({ event, username, isPublic = false }) {
 
   const handleCardClick = (e) => {
     if (e.target.tagName !== "BUTTON" && e.target.tagName !== "SVG") {
-      window?.open(
-        `${window?.location.origin}/${username}/${event.id}`,
-        "_blank"
-      );
+      const href = typeof window !== "undefined" ? window.location.href : "";
+      const url = new URL(href || "http://localhost");
+      url.searchParams.set("book_username", username);
+      url.searchParams.set("book_eventId", event.id);
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", url.toString());
+      }
+      // Trigger via query param; BookingDrawer listens to it
+      // No page navigation needed
     }
   };
 
@@ -113,6 +117,15 @@ export default function EventCard({ event, username, isPublic = false }) {
         <CardFooter className="pt-0">
           <Button
             variant="outline"
+            onClick={() => {
+              const href = typeof window !== "undefined" ? window.location.href : "";
+              const url = new URL(href || "http://localhost");
+              url.searchParams.set("book_username", username);
+              url.searchParams.set("book_eventId", event.id);
+              if (typeof window !== "undefined") {
+                window.history.replaceState(null, "", url.toString());
+              }
+            }}
             className="w-full bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 border-purple-200 text-purple-700 hover:text-purple-800 transition-all duration-200 hover:shadow-md"
           >
             <Eye className="mr-2 h-4 w-4" />

@@ -16,6 +16,7 @@ import { getEventCreatorBookings } from "@/actions/bookings";
 import { getUserEvents } from "@/actions/events";
 import { format } from "date-fns";
 import { Calendar, Link as LinkIcon, User, Clock, TrendingUp } from "lucide-react";
+import ShareLink from "@/components/share-link";
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
@@ -24,6 +25,7 @@ export default function DashboardPage() {
   const [userEvents, setUserEvents] = useState([]);
   const [loadingUpdates, setLoadingUpdates] = useState(false);
   const [loadingEvents, setLoadingEvents] = useState(false);
+  const [clientOrigin, setClientOrigin] = useState("");
 
   const {
     register,
@@ -38,6 +40,13 @@ export default function DashboardPage() {
     setValue("username", user?.username);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded]);
+
+  // Avoid hydration mismatch by reading window origin after mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setClientOrigin(window.location.origin);
+    }
+  }, []);
 
   // Fetch updates only when user is loaded and authenticated
   useEffect(() => {
@@ -88,43 +97,43 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="grid gap-6 grid-cols-1 md:grid-cols-6 xl:grid-cols-12 auto-rows-[minmax(140px,_auto)]">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-2xl">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="p-3 bg-white/20 rounded-full">
-            <User className="w-8 h-8 text-white" />
+      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 rounded-2xl p-5 md:p-8 text-white shadow-2xl col-span-1 md:col-span-6 xl:col-span-8 row-span-2">
+        <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
+          <div className="p-2 md:p-3 bg-white/20 rounded-full">
+            <User className="w-6 h-6 md:w-8 md:h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Welcome back, {user?.firstName}!</h1>
-            <p className="text-purple-100 text-lg">Ready to schedule your next meeting?</p>
+            <h1 className="text-2xl md:text-3xl font-bold">Welcome back, {user?.firstName}!</h1>
+            <p className="text-purple-100 text-sm md:text-lg">Ready to schedule your next meeting?</p>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 mt-4 md:mt-6">
+          <div className="bg-white/10 rounded-xl p-3 md:p-4 backdrop-blur-sm">
             <div className="flex items-center gap-3">
-              <Calendar className="w-6 h-6 text-purple-200" />
+              <Calendar className="w-5 h-5 md:w-6 md:h-6 text-purple-200" />
               <div>
-                <p className="text-2xl font-bold">{upcomingMeetings?.length || 0}</p>
-                <p className="text-purple-100">Upcoming Meetings</p>
+                <p className="text-xl md:text-2xl font-bold">{upcomingMeetings?.length || 0}</p>
+                <p className="text-purple-100 text-sm md:text-base">Upcoming Meetings</p>
               </div>
             </div>
           </div>
-          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+          <div className="bg-white/10 rounded-xl p-3 md:p-4 backdrop-blur-sm">
             <div className="flex items-center gap-3">
-              <Clock className="w-6 h-6 text-purple-200" />
+              <Clock className="w-5 h-5 md:w-6 md:h-6 text-purple-200" />
               <div>
-                <p className="text-2xl font-bold">24/7</p>
-                <p className="text-purple-100">Availability</p>
+                <p className="text-xl md:text-2xl font-bold">24/7</p>
+                <p className="text-purple-100 text-sm md:text-base">Availability</p>
               </div>
             </div>
           </div>
-          <div className="bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+          <div className="bg-white/10 rounded-xl p-3 md:p-4 backdrop-blur-sm">
             <div className="flex items-center gap-3">
-              <TrendingUp className="w-6 h-6 text-purple-200" />
+              <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-purple-200" />
               <div>
-                <p className="text-2xl font-bold">Active</p>
-                <p className="text-purple-100">Scheduling</p>
+                <p className="text-xl md:text-2xl font-bold">Active</p>
+                <p className="text-purple-100 text-sm md:text-base">Scheduling</p>
               </div>
             </div>
           </div>
@@ -132,7 +141,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Upcoming Meetings Card */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm col-span-1 md:col-span-3 xl:col-span-4 row-span-2">
         <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg border-b border-slate-200/50">
           <CardTitle className="flex items-center gap-3 text-slate-800">
             <Calendar className="w-6 h-6 text-blue-600" />
@@ -175,7 +184,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* User Events Card */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm col-span-1 md:col-span-3 xl:col-span-4">
         <CardHeader className="bg-gradient-to-r from-slate-50 to-indigo-50 rounded-t-lg border-b border-slate-200/50">
           <CardTitle className="flex items-center gap-3 text-slate-800">
             <Calendar className="w-6 h-6 text-indigo-600" />
@@ -243,7 +252,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* All Bookings Overview Card */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm col-span-1 md:col-span-3 xl:col-span-4">
         <CardHeader className="bg-gradient-to-r from-slate-50 to-green-50 rounded-t-lg border-b border-slate-200/50">
           <CardTitle className="flex items-center gap-3 text-slate-800">
             <Calendar className="w-6 h-6 text-green-600" />
@@ -278,7 +287,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* Username Update Card */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm col-span-1 md:col-span-6 xl:col-span-4">
         <CardHeader className="bg-gradient-to-r from-slate-50 to-purple-50 rounded-t-lg border-b border-slate-200/50">
           <CardTitle className="flex items-center gap-3 text-slate-800">
             <LinkIcon className="w-6 h-6 text-purple-600" />
@@ -292,7 +301,7 @@ export default function DashboardPage() {
                 Customize your scheduling link
               </label>
               <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <span className="text-slate-500 font-mono text-sm">{window?.location.origin}/</span>
+                <span className="text-slate-500 font-mono text-sm" suppressHydrationWarning>{clientOrigin ? `${clientOrigin}/` : ""}</span>
                 <Input 
                   {...register("username")} 
                   placeholder="username" 
@@ -324,6 +333,11 @@ export default function DashboardPage() {
             >
               {loading ? "Updating..." : "Update Username"}
             </Button>
+            {user?.username && (
+              <div className="pt-4">
+                <ShareLink path={`/${user.username}`} />
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>

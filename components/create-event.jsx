@@ -2,14 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerClose,
-  DrawerFooter,
-} from "@/components/ui/drawer";
+import { Modal, ModalContent, ModalHeader, ModalTitle, ModalFooter } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import EventForm from "./event-form";
 
@@ -37,29 +30,28 @@ export default function CreateEventDrawer() {
   const handleClose = () => {
     setIsOpen(false);
     if (searchParams.get("create") === "true") {
-      router.replace(window?.location.pathname);
+      const pathname = typeof window !== "undefined" ? window.location.pathname : "/events";
+      router.replace(pathname);
     }
   };
 
   return (
-    <Drawer open={isOpen} onClose={handleClose}>
-      <DrawerContent>
-        <DrawerHeader>
-          <DrawerTitle>Create New Event</DrawerTitle>
-        </DrawerHeader>
+    <Modal open={isOpen} onClose={handleClose}>
+      <ModalContent>
+        <ModalHeader>
+          <ModalTitle>Create New Event</ModalTitle>
+        </ModalHeader>
         <EventForm
           onSubmitForm={() => {
             handleClose();
           }}
         />
-        <DrawerFooter className="px-6">
-          <DrawerClose asChild>
-            <Button variant="outline" onClick={handleClose}>
-              Cancel
-            </Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+        <ModalFooter>
+          <Button variant="outline" onClick={handleClose} className="w-full">
+            Cancel
+          </Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 }

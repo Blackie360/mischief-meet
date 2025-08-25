@@ -35,9 +35,9 @@ export default function MeetingList({ meetings, type }) {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 grid-cols-1 md:grid-cols-6 xl:grid-cols-12 auto-rows-[minmax(140px,_auto)]">
       {meetings.map((meeting) => (
-        <Card key={meeting.id} className="flex flex-col justify-between group hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm shadow-lg">
+        <Card key={meeting.id} className="flex flex-col justify-between group hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm shadow-lg col-span-1 md:col-span-3 xl:col-span-4">
           <CardHeader className="pb-4">
             <div className="flex items-start justify-between mb-2">
               <CardTitle className="text-lg font-bold text-slate-800 group-hover:text-purple-700 transition-colors duration-200 line-clamp-2">

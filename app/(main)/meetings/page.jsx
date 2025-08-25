@@ -11,13 +11,13 @@ export const metadata = {
 
 export default async function MeetingsPage() {
   return (
-    <div className="space-y-6">
-      <div className="text-center md:text-left">
+    <div className="grid gap-6 grid-cols-1 md:grid-cols-6 xl:grid-cols-12 auto-rows-[minmax(140px,_auto)]">
+      <div className="text-center md:text-left col-span-1 md:col-span-6 xl:col-span-8">
         <h3 className="text-2xl font-bold text-slate-800 mb-2">Your Meetings</h3>
         <p className="text-slate-600">Manage your scheduled meetings and appointments</p>
       </div>
       
-      <Tabs defaultValue="upcoming" className="w-full">
+      <Tabs defaultValue="upcoming" className="w-full col-span-1 md:col-span-6 xl:col-span-12">
         <TabsList className="grid w-full grid-cols-2 bg-slate-100 p-1 rounded-xl">
           <TabsTrigger 
             value="upcoming" 
@@ -35,13 +35,13 @@ export default async function MeetingsPage() {
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="upcoming" className="mt-6">
+        <TabsContent value="upcoming" className="mt-6 col-span-1 md:col-span-6 xl:col-span-12">
           <Suspense fallback={<MeetingsLoadingFallback />}>
             <UpcomingMeetings />
           </Suspense>
         </TabsContent>
         
-        <TabsContent value="past" className="mt-6">
+        <TabsContent value="past" className="mt-6 col-span-1 md:col-span-6 xl:col-span-12">
           <Suspense fallback={<MeetingsLoadingFallback />}>
             <PastMeetings />
           </Suspense>
