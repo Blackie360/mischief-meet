@@ -88,9 +88,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="grid gap-6 grid-cols-1 md:grid-cols-6 xl:grid-cols-12 auto-rows-[minmax(140px,_auto)]">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-2xl">
+      <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 rounded-2xl p-8 text-white shadow-2xl col-span-1 md:col-span-6 xl:col-span-8 row-span-2">
         <div className="flex items-center gap-4 mb-4">
           <div className="p-3 bg-white/20 rounded-full">
             <User className="w-8 h-8 text-white" />
@@ -132,7 +132,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Upcoming Meetings Card */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm col-span-1 md:col-span-3 xl:col-span-4 row-span-2">
         <CardHeader className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-t-lg border-b border-slate-200/50">
           <CardTitle className="flex items-center gap-3 text-slate-800">
             <Calendar className="w-6 h-6 text-blue-600" />
@@ -175,7 +175,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* User Events Card */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm col-span-1 md:col-span-3 xl:col-span-4">
         <CardHeader className="bg-gradient-to-r from-slate-50 to-indigo-50 rounded-t-lg border-b border-slate-200/50">
           <CardTitle className="flex items-center gap-3 text-slate-800">
             <Calendar className="w-6 h-6 text-indigo-600" />
@@ -243,7 +243,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* All Bookings Overview Card */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm col-span-1 md:col-span-3 xl:col-span-4">
         <CardHeader className="bg-gradient-to-r from-slate-50 to-green-50 rounded-t-lg border-b border-slate-200/50">
           <CardTitle className="flex items-center gap-3 text-slate-800">
             <Calendar className="w-6 h-6 text-green-600" />
@@ -278,7 +278,7 @@ export default function DashboardPage() {
       </Card>
 
       {/* Username Update Card */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm col-span-1 md:col-span-6 xl:col-span-4">
         <CardHeader className="bg-gradient-to-r from-slate-50 to-purple-50 rounded-t-lg border-b border-slate-200/50">
           <CardTitle className="flex items-center gap-3 text-slate-800">
             <LinkIcon className="w-6 h-6 text-purple-600" />
