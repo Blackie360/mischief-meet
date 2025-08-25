@@ -16,6 +16,7 @@ import { getEventCreatorBookings } from "@/actions/bookings";
 import { getUserEvents } from "@/actions/events";
 import { format } from "date-fns";
 import { Calendar, Link as LinkIcon, User, Clock, TrendingUp } from "lucide-react";
+import ShareLink from "@/components/share-link";
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
@@ -332,6 +333,11 @@ export default function DashboardPage() {
             >
               {loading ? "Updating..." : "Update Username"}
             </Button>
+            {user?.username && (
+              <div className="pt-4">
+                <ShareLink path={`/${user.username}`} />
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>
